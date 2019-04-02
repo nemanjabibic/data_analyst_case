@@ -1,0 +1,45 @@
+with all_data as (
+	select 
+		spen.*
+		,sub.*
+	from (
+		select 
+			subscription_date
+			,sum(subscription_count) as subscription_count
+			,sum(net_revenue) as net_revenue
+		from data_analyst_case.dwh.subscriptions
+		group by 
+			subscription_date
+		) sub
+	full outer join (
+		select 
+			report_date
+			,sum(spendings) as total_spending
+		from data_analyst_case.dwh.spendings
+		group by 
+			report_date
+		) spen
+		on sub.subscription_date = spen.report_date
+) 
+select 
+	case 
+		when day_of_week = 0 then 'Sunday'
+		when day_of_week = 1 then 'Monday'
+		when day_of_week = 2 then 'Tuesday'
+		when day_of_week = 3 then 'Wednesday'
+		when day_of_week = 4 then 'Thursday'
+		when day_of_week = 5 then 'Friday'
+		when day_of_week = 6 then 'Saturday'
+	end as day
+	,round(cast(avg(total_spending) as numeric),2) as avg_spending
+	,round(cast(avg(net_revenue) as numeric),2) as avg_revenue
+from (
+	select 
+		report_date
+		,extract(dow from report_date) as day_of_week
+		,total_spending
+		,net_revenue
+	from all_data
+) a
+group by day_of_week
+order by day_of_week

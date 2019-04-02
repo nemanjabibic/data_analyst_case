@@ -1,0 +1,8 @@
+select 
+	marketing_channel_id
+	,round(cast(sum(spendings) as numeric),2) as total_spendings
+from data_analyst_case.dwh.spendings
+where report_date >= '2016-12-01'
+and report_date < '2017-01-01'
+group by marketing_channel_id
+order by marketing_channel_id
